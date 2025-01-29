@@ -6,7 +6,7 @@ export default function Index() {
 
     useEffect(() => {
         const timeout = setTimeout(() => {
-            router.replace("/VocabListPage");
+            router.replace("/vocabListPage");
         }, 100);
 
         return () => clearTimeout(timeout);
