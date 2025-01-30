@@ -1,23 +1,18 @@
 import React from "react";
-import { View, Text, StyleSheet, Button, Alert } from "react-native";
+import { View, Text, StyleSheet, Button } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function HomePage() {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>MyVocabVault</Text>
       <View style={styles.buttonContainer}>
-        <Button
-          title="Log In"
-          onPress={() => Alert.alert("Log In button pressed")}
-          color="#4CAF50"
-        />
+        <Button title="Log In" onPress={() => router.push("/login")} color="#4CAF50" />
       </View>
       <View style={styles.buttonContainer}>
-        <Button
-          title="Create Account"
-          onPress={() => Alert.alert("Create Account button pressed")}
-          color="#2196F3"
-        />
+        <Button title="Create Account" onPress={() => router.push("/createAccount")} color="#2196F3" />
       </View>
     </View>
   );
@@ -42,3 +37,5 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
 });
+
+
