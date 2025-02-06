@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react-native";
-import LandingScreen from "../LandingPage"; 
+import LandingScreen from "../screens/LandingPage"; 
 import { useRouter } from "expo-router";
 
 // Mock the router
