@@ -19,10 +19,9 @@ export default function LoginPage() {
 
       const { password: storedPassword } = JSON.parse(userData);
       if (password === storedPassword) {
-        // temporarily store current user info
         await AsyncStorage.setItem("currentUser", email);
-        Alert.alert("Login Successful", "Welcome back!");
-        router.replace("/HomePage");
+        Alert.alert("Login Successful", "Redirecting to Test Page...");
+        router.replace("/TestLandingPage");  // Jump to TestLandingPage
       } else {
         Alert.alert("Login Failed", "Incorrect password.");
       }
@@ -77,5 +76,3 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
-
-
