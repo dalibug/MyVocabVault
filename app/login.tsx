@@ -1,14 +1,54 @@
-import React from "react";
-import { View, Text, StyleSheet, Button } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 
-export default function Login() {
+export default function LoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      const userData = await AsyncStorage.getItem(`user_${email}`);
+
+      if (!userData) {
+        Alert.alert("Login Failed", "User not found.");
+        return;
+      }
+
+      const { password: storedPassword } = JSON.parse(userData);
+      if (password === storedPassword) {
+        await AsyncStorage.setItem("currentUser", email);
+        Alert.alert("Login Successful", "Redirecting to Test Page...");
+        router.replace("/TestLandingPage");  // Jump to TestLandingPage
+      } else {
+        Alert.alert("Login Failed", "Incorrect password.");
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+      Alert.alert("Login Failed", errorMessage);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>This is a test page, button navigation successful</Text>
-      <Button title="Go Back" onPress={() => router.replace("/")} color="#FF5733" />
+      <Text style={styles.title}>Log In</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+      <Button title="Log In" onPress={handleLogin} color="#FF5733" />
     </View>
   );
 }
@@ -22,10 +62,17 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
-    textAlign: "center",
     marginBottom: 20,
   },
+  input: {
+    width: "80%",
+    height: 40,
+    borderColor: "#ccc",
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
 });
-
