@@ -1,77 +1,74 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
+import wordList from "../assets/advanced_words.json";
+import { useNavigation } from "@react-navigation/native"; // For navigation
 
 const LandingScreen = () => {
-  const navigation = useNavigation();
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  // State variables to store daily word, definition, and loading state
   const [dailyWord, setDailyWord] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [definition, setDefinition] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const navigation = useNavigation(); // For navigation
 
+  // Fetch a new daily word when the screen loads
   useEffect(() => {
-    // Fetch user email from AsyncStorage (or API if needed)
-    const fetchUserData = async () => {
-      const email = await AsyncStorage.getItem("userEmail");
-      setUserEmail(email);
-    };
-
-    fetchUserData();
-  }, []);
-
-  useEffect(() => {
-    // Fetch daily vocabulary word from API
-    const fetchDailyWord = async () => {
-      try {
-        const response = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/random");
-        const data = await response.json();
-
-        if (data && data.length > 0) {
-          setDailyWord(data[0].word);
-          await saveToHistoryList(data[0].word);
-        }
-      } catch (error) {
-        console.error("Error fetching word:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDailyWord();
   }, []);
 
-  // Save daily word to history
-  const saveToHistoryList = async (word: string) => {
+  const fetchDailyWord = async () => {
     try {
-      const existingHistory = await AsyncStorage.getItem("historyList");
-      const historyList = existingHistory ? JSON.parse(existingHistory) : [];
-      historyList.unshift(word); // Add new word to the top of the list
-      await AsyncStorage.setItem("historyList", JSON.stringify(historyList));
+      // Select a random word from the word list
+      const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
+      const API_KEY = "9c3b1721-9b03-4686-954c-91e9137bf51a";
+      const API_URL = `https://www.dictionaryapi.com/api/v3/references/collegiate/json/${randomWord}?key=${API_KEY}`;
+      const response = await fetch(API_URL);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch definition for ${randomWord}`);
+      }
+
+      // Extract definition from API response
+      const data = await response.json();
+      const fetchedDefinition = data[0]?.shortdef?.[0] || "Definition not available.";
+
+      // Update state with the fetched word and definition
+      setDailyWord(randomWord);
+      setDefinition(fetchedDefinition);
     } catch (error) {
-      console.error("Error saving to history:", error);
+      console.error("Error fetching daily word:", error);
+      setDailyWord("No word available");
+      setDefinition("Definition not available.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Logout function (clears stored user data)
-  const handleLogout = async () => {
-    await AsyncStorage.removeItem("userEmail");
-    navigation.navigate("Login"); // Redirect to login screen
+  // Log out function - navigates to Home Page
+  const handleLogout = () => {
+    navigation.navigate("HomePage"); // Redirect to the Home Page
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.greeting}>Welcome, {userEmail || "User"}!</Text>
-
-      <Text style={styles.sectionTitle}>Daily Vocabulary Word</Text>
-      {loading ? (
-        <ActivityIndicator size="large" color="#4CAF50" />
-      ) : (
-        <Text style={styles.dailyWord}>{dailyWord || "No word available"}</Text>
-      )}
-
+      {/* Logout button */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>
+
+      {/* Daily word section */}
+      <Text style={styles.sectionTitle}>Daily Vocabulary Word</Text>
+      {loading ? (
+        // Show loading indicator while fetching data
+        <ActivityIndicator size="large" color="#4CAF50" />
+      ) : (
+        <>
+          {/* Display fetched word and definition */}
+          <Text style={styles.dailyWord}>{dailyWord || "No word available"}</Text>
+          <Text style={styles.definition}>
+            {definition || "Definition not available."}
+          </Text>
+        </>
+      )}
     </View>
   );
 };
@@ -84,11 +81,19 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f9fa",
     padding: 20,
   },
-  greeting: {
-    fontSize: 24,
+  logoutButton: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+    backgroundColor: "#d9534f",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  logoutText: {
+    fontSize: 16,
+    color: "#fff",
     fontWeight: "bold",
-    color: "#333",
-    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 20,
@@ -100,19 +105,15 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     color: "#4CAF50",
-    marginBottom: 20,
+    marginBottom: 10,
   },
-  logoutButton: {
-    marginTop: 20,
-    backgroundColor: "#d9534f",
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 8,
-  },
-  logoutText: {
+  definition: {
     fontSize: 18,
-    color: "#fff",
-    fontWeight: "bold",
+    fontStyle: "italic",
+    color: "#555",
+    marginBottom: 20,
+    textAlign: "center",
+    paddingHorizontal: 10,
   },
 });
 
