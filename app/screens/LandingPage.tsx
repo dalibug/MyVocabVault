@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
-import wordList from "../assets/advanced_words.json";
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Button } from "react-native";
+import wordList from "../../assets/advanced_words.json";
 import { useNavigation } from "@react-navigation/native"; // For navigation
 
-const LandingScreen = () => {
+const LandingScreen = ({ route }) => {
   // State variables to store daily word, definition, and loading state
   const [dailyWord, setDailyWord] = useState<string | null>(null);
   const [definition, setDefinition] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const navigation = useNavigation(); // For navigation
+  const navigation = useNavigation(); // For navigating through pages
+  const { userID } = route.params;
 
   // Fetch a new daily word when the screen loads
   useEffect(() => {
@@ -48,11 +49,20 @@ const LandingScreen = () => {
     navigation.navigate("HomePage"); // Redirect to the Home Page
   };
 
+  const handleVocabLists = () => {
+    
+    navigation.navigate("VocabListPage", {userID: userID});
+  }
+
   return (
     <View style={styles.container}>
       {/* Logout button */}
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.vocabListButton} onPress={handleVocabLists}>
+        <Text style={styles.vocabListText}>View Vocab Lists</Text>
       </TouchableOpacity>
 
       {/* Daily word section */}
@@ -91,6 +101,19 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   logoutText: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  vocabListButton: { // style for button background is temporary
+    position: "absolute",
+    bottom: 250,
+    backgroundColor: "#0000FF",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  vocabListText: { // style for button text is temporary
     fontSize: 16,
     color: "#fff",
     fontWeight: "bold",

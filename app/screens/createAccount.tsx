@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
+import { useSQLiteContext } from "expo-sqlite";
 
 export default function CreateAccount() {
-  const router = useRouter();
+  const db = useSQLiteContext();
+  const navigation = useNavigation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -16,16 +17,21 @@ export default function CreateAccount() {
       }
 
       // check if the account has been registered
-      const existingUser = await AsyncStorage.getItem(`user_${email}`);
+      const existingUser = await db.getFirstAsync("SELECT * FROM users WHERE email = ?", [email]);
       if (existingUser) {
         Alert.alert("Error", "This email is already registered.");
         return;
       }
 
       // user info storage
-      await AsyncStorage.setItem(`user_${email}`, JSON.stringify({ email, password }));
+      await db.runAsync("INSERT INTO users (email, password) VALUES (?, ?)", [email, password]);
+      
+      const result = await db.getFirstAsync("SELECT last_insert_rowid() AS lastID"); // Gets the latest userID
+      const newUserID = result.lastID;
+      await db.runAsync("INSERT INTO vocabLists (userID, listName) VALUES (?, ?)", [newUserID, "Vocab Word History"]);
+
       Alert.alert("Sign Up Successful", "You can now log in.");
-      router.replace("/login"); // jump to login page
+      navigation.navigate("LoginPage"); // jump to login page
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       Alert.alert("Sign Up Failed", errorMessage);
