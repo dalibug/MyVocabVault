@@ -1,27 +1,30 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
+import { useSQLiteContext } from "expo-sqlite";
 
 export default function LoginPage() {
-  const router = useRouter();
+  const navigation = useNavigation();
+  const db = useSQLiteContext();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
     try {
-      const userData = await AsyncStorage.getItem(`user_${email}`);
+      const userData = await db.getFirstAsync("SELECT * FROM users WHERE EMAIL = ?", [email]);
 
       if (!userData) {
         Alert.alert("Login Failed", "User not found.");
         return;
       }
 
-      const { password: storedPassword } = JSON.parse(userData);
-      if (password === storedPassword) {
-        await AsyncStorage.setItem("currentUser", email);
-        Alert.alert("Login Successful", "Redirecting to Test Page...");
-        router.replace("/TestLandingPage");  // Jump to TestLandingPage
+      const validUser = await db.getFirstAsync("SELECT * FROM users WHERE email = ? AND password = ?", [email, password]);
+      if (validUser) {
+        // await AsyncStorage.setItem("currentUser", email);
+        // Alert.alert("Login Successful", "Redirecting to Test Page...");
+        navigation.navigate("LandingPage", { userID: validUser.userID });  // Jump to LandingPage
       } else {
         Alert.alert("Login Failed", "Incorrect password.");
       }

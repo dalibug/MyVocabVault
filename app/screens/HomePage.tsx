@@ -1,18 +1,21 @@
 import React from "react";
 import { View, Text, StyleSheet, Button } from "react-native";
 import { useRouter } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
+
 
 export default function HomePage() {
   const router = useRouter();
+  const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>MyVocabVault</Text>
       <View style={styles.buttonContainer}>
-        <Button title="Log In" onPress={() => router.push("/login")} color="#4CAF50" />
+        <Button title="Log In" onPress={() => navigation.navigate("LoginPage")} color="#4CAF50" />
       </View>
       <View style={styles.buttonContainer}>
-        <Button title="Create Account" onPress={() => router.push("/createAccount")} color="#2196F3" />
+        <Button title="Create Account" onPress={() => navigation.navigate("CreateAccountPage")} color="#2196F3" />
       </View>
     </View>
   );
