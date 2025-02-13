@@ -22,8 +22,6 @@ export default function LoginPage() {
 
       const validUser = await db.getFirstAsync("SELECT * FROM users WHERE email = ? AND password = ?", [email, password]);
       if (validUser) {
-        // await AsyncStorage.setItem("currentUser", email);
-        // Alert.alert("Login Successful", "Redirecting to Test Page...");
         navigation.navigate("LandingPage", { userID: validUser.userID });  // Jump to LandingPage
       } else {
         Alert.alert("Login Failed", "Incorrect password.");
@@ -36,10 +34,10 @@ export default function LoginPage() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Log In</Text>
+      <Text style={styles.title}>Welcome Back!</Text>
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="User Name"
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
@@ -61,7 +59,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#adba95",
     padding: 20,
   },
   title: {
@@ -79,3 +77,5 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
+
+export default LoginPage;
