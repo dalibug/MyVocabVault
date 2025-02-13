@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ImageBackground } from "react-native";
 import wordList from "../../assets/advanced_words.json";
 import { useNavigation } from "@react-navigation/native";
 import * as SQLite from "expo-sqlite";
+import { Asset } from "expo-asset";
 
 const LandingScreen = ({ route }) => {
   const [dailyWord, setDailyWord] = useState<string | null>(null);
@@ -38,7 +39,6 @@ const LandingScreen = ({ route }) => {
     fetchDailyWord();
   }, []);
 
-  // Fetch a new daily word
   const fetchDailyWord = async () => {
     setLoading(true);
     try {
@@ -65,11 +65,9 @@ const LandingScreen = ({ route }) => {
     }
   };
 
-  // Save word to vocab history, preventing duplicates
   const saveWordToHistory = async () => {
     if (db && dailyWord && definition) {
       try {
-        // Check if the word is already in the database
         const existingWord = await db.getFirstAsync(
           "SELECT * FROM vocabHistory WHERE word = ? AND userID = ?",
           [dailyWord, userID]
@@ -81,7 +79,6 @@ const LandingScreen = ({ route }) => {
           return;
         }
 
-        // Insert word if it doesn't already exist
         await db.runAsync(
           "INSERT INTO vocabHistory (word, definition, userID) VALUES (?, ?, ?)",
           [dailyWord, definition, userID]
@@ -96,49 +93,60 @@ const LandingScreen = ({ route }) => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Logout button */}
-      <TouchableOpacity style={styles.logoutButton} onPress={() => navigation.navigate("HomePage")}>
-        <Text style={styles.logoutText}>Log Out</Text>
-      </TouchableOpacity>
+    <ImageBackground
+      source={require("../../assets/images/LP_background.png")} 
+      style={styles.background}
+    >
+      <View style={styles.overlay}>
+        <TouchableOpacity style={styles.logoutButton} onPress={() => navigation.navigate("HomePage")}>
+          <Text style={styles.logoutText}>Log Out</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.vocabListButton}
-        onPress={() => navigation.navigate("VocabListPage", { userID })}
-      >
-        <Text style={styles.vocabListText}>View Vocab Lists</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.vocabListButton}
+          onPress={() => navigation.navigate("VocabListPage", { userID })}
+        >
+          <Text style={styles.vocabListText}>🚀 View Vocab Lists</Text>
+        </TouchableOpacity>
 
-      {/* Daily word section */}
-      <Text style={styles.sectionTitle}>Daily Vocabulary Word</Text>
-      {loading ? (
-        <ActivityIndicator size="large" color="#4CAF50" />
-      ) : (
-        <>
-          <Text style={styles.dailyWord}>{dailyWord || "No word available"}</Text>
-          <Text style={styles.definition}>{definition || "Definition not available."}</Text>
-        </>
-      )}
+        <Text style={styles.sectionTitle}>Random Vocabulary Word: </Text>
 
-      {/* Refresh Button */}
-      <TouchableOpacity style={styles.refreshButton} onPress={fetchDailyWord}>
-        <Text style={styles.refreshButtonText}>🔄 Refresh Word</Text>
-      </TouchableOpacity>
+        {loading ? (
+          <ActivityIndicator size="large" color="#4CAF50" />
+        ) : (
+          <>
+            {/*  TEXT BOX HERE */}
+            <View style={styles.textBox}>
+              <Text style={styles.dailyWord}>{dailyWord || "No word available"}</Text>
+              <Text style={styles.definition}>{definition || "Definition not available."}</Text>
+            </View>
+          </>
+        )}
 
-      {/* Save Word to History Button */}
-      <TouchableOpacity style={styles.saveButton} onPress={saveWordToHistory}>
-        <Text style={styles.saveButtonText}>✅ Save Word to History</Text>
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity style={styles.refreshButton} onPress={fetchDailyWord}>
+          <Text style={styles.refreshButtonText}>🔄 Refresh Word</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.saveButton} onPress={saveWordToHistory}>
+          <Text style={styles.saveButtonText}>✅ Save Word to History</Text>
+        </TouchableOpacity>
+      </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
+    flex: 1,
+    resizeMode: "cover",
+    width: "100%",
+    height: "100%",
+  },
+  overlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "rgba(255, 255, 255, 0.3)", 
     padding: 20,
   },
   logoutButton: {
@@ -169,22 +177,31 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#444",
+    color: "#222222",
     marginBottom: 10,
+  },
+  textBox: {
+    backgroundColor: "rgba(255, 255, 255, 0.62)", 
+    padding: 15, 
+    borderRadius: 10, 
+    borderWidth: 2, 
+    borderColor: "#FFA500",
+    marginVertical: 10, //Adds spacing around the box
+    alignItems: "center", //Centers text inside the box
   },
   dailyWord: {
     fontSize: 22,
     fontWeight: "bold",
     color: "#4CAF50",
-    marginBottom: 10,
+    marginBottom: 5,
   },
   definition: {
     fontSize: 18,
     fontStyle: "italic",
-    color: "#555",
-    marginBottom: 20,
+    fontWeight: "bold",
+    color: "#222222",  
     textAlign: "center",
     paddingHorizontal: 10,
   },
