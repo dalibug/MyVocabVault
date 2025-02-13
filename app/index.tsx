@@ -9,42 +9,21 @@ import VocabListPage from "./screens/VocabListPage";
 import CreateAccount from "./screens/createAccount";
 import TestLandingPage from "./screens/TestLandingPage";
 import Modal from "./modal";
+import ForgotPassword from "./screens/ForgotPassword";
+import VerifySecurityAnswer from "./screens/VerifySecurityAnswer";
+import ResetPassword from "./screens/ResetPassword";
 
-// initialize the database
 const initDB = async (db: SQLiteDatabase) => {
   try {
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS users (
         userID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
-        email TEXT unique NOT NULL, 
-        password TEXT NOT NULL
+        email TEXT UNIQUE NOT NULL, 
+        password TEXT NOT NULL,
+        securityQuestion TEXT NOT NULL,
+        securityAnswer TEXT NOT NULL
       );
     `);
-
-    // Use getFirstAsync and handle the case where no rows are returned
-    const userCountResult = await db.getFirstAsync("SELECT COUNT(*) AS userCount FROM users");
-
-    await db.execAsync(`
-      CREATE TABLE IF NOT EXISTS vocabLists (
-        listID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        userID INTEGER NOT NULL,
-        listName TEXT NOT NULL,
-        FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE -- Important!
-      );
-    `);
-
-    // Check if a result was returned and if the count is 0
-    if (userCountResult && userCountResult.userCount === 0) {  // Safer check
-      await db.execAsync(`INSERT INTO users (email, password) VALUES ("testuser", "123");`);
-      await db.execAsync(`INSERT INTO users (email, password) VALUES ("email", "password");`);
-
-      await db.execAsync(`INSERT INTO vocabLists (userID, listName) VALUES ("1", "Vocab Word History");`);
-      await db.execAsync(`INSERT INTO vocabLists (userID, listName) VALUES ("1", "Created List for testuser");`);
-
-      await db.execAsync(`INSERT INTO vocabLists (userID, listName) VALUES ("2", "Vocab Word History");`);
-      await db.execAsync(`INSERT INTO vocabLists (userID, listName) VALUES ("2", "Created List for email user");`);
-    }
-
   } catch (error) {
     console.error("Error initializing database:", error);
     Alert.alert("Error", "Database initialization failed. Please try again later.");
@@ -53,32 +32,22 @@ const initDB = async (db: SQLiteDatabase) => {
 
 const Stack = createNativeStackNavigator();
 
-export default function index() {
+export default function AppNavigator() {
   return (
     <SQLiteProvider databaseName="vocabVault.db" onInit={initDB}>
       <Stack.Navigator initialRouteName="HomePage">
-        <Stack.Screen name="HomePage" component={HomePage}
-          options={{ headerShown: false }} />
-
-        <Stack.Screen name="CreateAccountPage" component={CreateAccount}
-          options={{ title: "Create an Account" }} />
-
-        <Stack.Screen name="LoginPage" component={LoginPage}
-          options={{ title: "Log In" }} />
-
-        <Stack.Screen name="LandingPage" component={LandingPage}
-          options={{ headerShown: false }} />
-
-        <Stack.Screen name="TestLandingPage" component={TestLandingPage}
-          options={{ headerShown: false }} />
-
-        <Stack.Screen name="VocabListPage" component={VocabListPage}
-          options={{ title: "Vocab Lists" }} />
-
-        <Stack.Screen name="Modal" component={Modal}
-          options={{ presentation: "testing modal" }} />
-
+        <Stack.Screen name="HomePage" component={HomePage} options={{ headerShown: false }} />
+        <Stack.Screen name="CreateAccountPage" component={CreateAccount} options={{ title: "Create an Account" }} />
+        <Stack.Screen name="LoginPage" component={LoginPage} options={{ title: "Log In" }} />
+        <Stack.Screen name="LandingPage" component={LandingPage} options={{ headerShown: false }} />
+        <Stack.Screen name="TestLandingPage" component={TestLandingPage} options={{ headerShown: false }} />
+        <Stack.Screen name="VocabListPage" component={VocabListPage} options={{ title: "Vocab Lists" }} />
+        <Stack.Screen name="Modal" component={Modal} options={{ presentation: "testing modal" }} />
+        <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{ title: "Forgot Password" }} />
+        <Stack.Screen name="VerifySecurityAnswer" component={VerifySecurityAnswer} options={{ title: "Security Question" }} />
+        <Stack.Screen name="ResetPassword" component={ResetPassword} options={{ title: "Reset Password" }} />
       </Stack.Navigator>
     </SQLiteProvider>
   );
-};
+}
+

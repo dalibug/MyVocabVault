@@ -1,20 +1,17 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
 
 export default function LoginPage() {
   const navigation = useNavigation();
   const db = useSQLiteContext();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
     try {
-      const userData = await db.getFirstAsync("SELECT * FROM users WHERE EMAIL = ?", [email]);
-
+      const userData = await db.getFirstAsync("SELECT * FROM users WHERE email = ?", [email]);
       if (!userData) {
         Alert.alert("Login Failed", "User not found.");
         return;
@@ -22,34 +19,24 @@ export default function LoginPage() {
 
       const validUser = await db.getFirstAsync("SELECT * FROM users WHERE email = ? AND password = ?", [email, password]);
       if (validUser) {
-        navigation.navigate("LandingPage", { userID: validUser.userID });  // Jump to LandingPage
+        navigation.navigate("LandingPage", { userID: validUser.userID });
       } else {
         Alert.alert("Login Failed", "Incorrect password.");
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-      Alert.alert("Login Failed", errorMessage);
+      Alert.alert("Login Failed", error.message || "An unknown error occurred");
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome Back!</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="User Name"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+      <TextInput style={styles.input} placeholder="User Name" value={email} onChangeText={setEmail} />
+      <TextInput style={styles.input} placeholder="Password" secureTextEntry value={password} onChangeText={setPassword} />
       <Button title="Log In" onPress={handleLogin} color="#FF5733" />
+      <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}> 
+        <Text style={{ color: "blue", marginTop: 10 }}>Forgot/Reset Password?</Text> 
+      </TouchableOpacity>
     </View>
   );
 }
@@ -78,4 +65,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginPage;
+
