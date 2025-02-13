@@ -1,24 +1,47 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Button } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import wordList from "../../assets/advanced_words.json";
-import { useNavigation } from "@react-navigation/native"; // For navigation
+import { useNavigation } from "@react-navigation/native";
+import * as SQLite from "expo-sqlite";
 
 const LandingScreen = ({ route }) => {
-  // State variables to store daily word, definition, and loading state
   const [dailyWord, setDailyWord] = useState<string | null>(null);
   const [definition, setDefinition] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const navigation = useNavigation(); // For navigating through pages
+  const navigation = useNavigation();
   const { userID } = route.params;
+  const [db, setDB] = useState<SQLite.SQLiteDatabase | null>(null);
 
-  // Fetch a new daily word when the screen loads
+  useEffect(() => {
+    (async () => {
+      try {
+        const dbInstance = await SQLite.openDatabaseAsync("vocabVault.db");
+        setDB(dbInstance);
+        console.log("Database opened successfully");
+
+        // Ensure the vocabHistory table exists
+        await dbInstance.runAsync(
+          `CREATE TABLE IF NOT EXISTS vocabHistory (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            word TEXT NOT NULL UNIQUE, 
+            definition TEXT NOT NULL,
+            userID TEXT NOT NULL
+          );`
+        );
+      } catch (error) {
+        console.error("Error opening database:", error);
+      }
+    })();
+  }, []);
+
   useEffect(() => {
     fetchDailyWord();
   }, []);
 
+  // Fetch a new daily word
   const fetchDailyWord = async () => {
+    setLoading(true);
     try {
-      // Select a random word from the word list
       const randomWord = wordList[Math.floor(Math.random() * wordList.length)];
       const API_KEY = "9c3b1721-9b03-4686-954c-91e9137bf51a";
       const API_URL = `https://www.dictionaryapi.com/api/v3/references/collegiate/json/${randomWord}?key=${API_KEY}`;
@@ -28,11 +51,9 @@ const LandingScreen = ({ route }) => {
         throw new Error(`Failed to fetch definition for ${randomWord}`);
       }
 
-      // Extract definition from API response
       const data = await response.json();
       const fetchedDefinition = data[0]?.shortdef?.[0] || "Definition not available.";
 
-      // Update state with the fetched word and definition
       setDailyWord(randomWord);
       setDefinition(fetchedDefinition);
     } catch (error) {
@@ -44,41 +65,70 @@ const LandingScreen = ({ route }) => {
     }
   };
 
-  // Log out function - navigates to Home Page
-  const handleLogout = () => {
-    navigation.navigate("HomePage"); // Redirect to the Home Page
-  };
+  // Save word to vocab history, preventing duplicates
+  const saveWordToHistory = async () => {
+    if (db && dailyWord && definition) {
+      try {
+        // Check if the word is already in the database
+        const existingWord = await db.getFirstAsync(
+          "SELECT * FROM vocabHistory WHERE word = ? AND userID = ?",
+          [dailyWord, userID]
+        );
 
-  const handleVocabLists = () => {
-    
-    navigation.navigate("VocabListPage", {userID: userID});
-  }
+        if (existingWord) {
+          console.log(`⚠️ Word '${dailyWord}' already exists in history.`);
+          alert("This word is already in your history!");
+          return;
+        }
+
+        // Insert word if it doesn't already exist
+        await db.runAsync(
+          "INSERT INTO vocabHistory (word, definition, userID) VALUES (?, ?, ?)",
+          [dailyWord, definition, userID]
+        );
+
+        console.log(`✅ Saved '${dailyWord}' to vocabHistory`);
+        alert("Word saved to history!");
+      } catch (error) {
+        console.error("🚨 Error saving word:", error);
+      }
+    }
+  };
 
   return (
     <View style={styles.container}>
       {/* Logout button */}
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+      <TouchableOpacity style={styles.logoutButton} onPress={() => navigation.navigate("HomePage")}>
         <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.vocabListButton} onPress={handleVocabLists}>
+      <TouchableOpacity
+        style={styles.vocabListButton}
+        onPress={() => navigation.navigate("VocabListPage", { userID })}
+      >
         <Text style={styles.vocabListText}>View Vocab Lists</Text>
       </TouchableOpacity>
 
       {/* Daily word section */}
       <Text style={styles.sectionTitle}>Daily Vocabulary Word</Text>
       {loading ? (
-        // Show loading indicator while fetching data
         <ActivityIndicator size="large" color="#4CAF50" />
       ) : (
         <>
-          {/* Display fetched word and definition */}
           <Text style={styles.dailyWord}>{dailyWord || "No word available"}</Text>
-          <Text style={styles.definition}>
-            {definition || "Definition not available."}
-          </Text>
+          <Text style={styles.definition}>{definition || "Definition not available."}</Text>
         </>
       )}
+
+      {/* Refresh Button */}
+      <TouchableOpacity style={styles.refreshButton} onPress={fetchDailyWord}>
+        <Text style={styles.refreshButtonText}>🔄 Refresh Word</Text>
+      </TouchableOpacity>
+
+      {/* Save Word to History Button */}
+      <TouchableOpacity style={styles.saveButton} onPress={saveWordToHistory}>
+        <Text style={styles.saveButtonText}>✅ Save Word to History</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -105,7 +155,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
-  vocabListButton: { // style for button background is temporary
+  vocabListButton: {
     position: "absolute",
     bottom: 250,
     backgroundColor: "#0000FF",
@@ -113,7 +163,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
   },
-  vocabListText: { // style for button text is temporary
+  vocabListText: {
     fontSize: 16,
     color: "#fff",
     fontWeight: "bold",
@@ -137,6 +187,30 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
     paddingHorizontal: 10,
+  },
+  refreshButton: {
+    backgroundColor: "#FFA500",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  refreshButtonText: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  saveButton: {
+    backgroundColor: "#4CAF50",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 
