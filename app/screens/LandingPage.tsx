@@ -2,38 +2,17 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ImageBackground } from "react-native";
 import wordList from "../../assets/advanced_words.json";
 import { useNavigation } from "@react-navigation/native";
-import * as SQLite from "expo-sqlite";
+import { useSQLiteContext } from "expo-sqlite";
 import { Asset } from "expo-asset";
 
 const LandingScreen = ({ route }) => {
   const [dailyWord, setDailyWord] = useState<string | null>(null);
   const [definition, setDefinition] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [vocabHistoryID, setVocabHistoryID] = useState<number | null>(null);
   const navigation = useNavigation();
   const { userID } = route.params;
-  const [db, setDB] = useState<SQLite.SQLiteDatabase | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const dbInstance = await SQLite.openDatabaseAsync("vocabVault.db");
-        setDB(dbInstance);
-        console.log("Database opened successfully");
-
-        // Ensure the vocabHistory table exists
-        await dbInstance.runAsync(
-          `CREATE TABLE IF NOT EXISTS vocabHistory (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            word TEXT NOT NULL UNIQUE, 
-            definition TEXT NOT NULL,
-            userID TEXT NOT NULL
-          );`
-        );
-      } catch (error) {
-        console.error("Error opening database:", error);
-      }
-    })();
-  }, []);
+  const db = useSQLiteContext();
 
   useEffect(() => {
     fetchDailyWord();
@@ -56,6 +35,10 @@ const LandingScreen = ({ route }) => {
 
       setDailyWord(randomWord);
       setDefinition(fetchedDefinition);
+
+      // gets the listID of the vocab history list
+      const vocabHistoryID = await db.getFirstAsync("SELECT listID FROM vocabLists WHERE userID = ?", [userID]);
+      setVocabHistoryID(vocabHistoryID);
     } catch (error) {
       console.error("Error fetching daily word:", error);
       setDailyWord("No word available");
@@ -65,12 +48,13 @@ const LandingScreen = ({ route }) => {
     }
   };
 
+  // Might need to add a limit to how many words can be saved to history
   const saveWordToHistory = async () => {
-    if (db && dailyWord && definition) {
+    if (dailyWord && definition) {
       try {
         const existingWord = await db.getFirstAsync(
-          "SELECT * FROM vocabHistory WHERE word = ? AND userID = ?",
-          [dailyWord, userID]
+          "SELECT * FROM wordInList WHERE userID = ? AND listID = ? AND word = ?", 
+          [userID, vocabHistoryID, dailyWord]
         );
 
         if (existingWord) {
@@ -80,8 +64,8 @@ const LandingScreen = ({ route }) => {
         }
 
         await db.runAsync(
-          "INSERT INTO vocabHistory (word, definition, userID) VALUES (?, ?, ?)",
-          [dailyWord, definition, userID]
+          "INSERT INTO wordInList (listID, userID, word, definition) VALUES (?, ?, ?, ?)", 
+        [vocabHistoryID, userID, dailyWord, definition]
         );
 
         console.log(`✅ Saved '${dailyWord}' to vocabHistory`);
@@ -91,6 +75,31 @@ const LandingScreen = ({ route }) => {
       }
     }
   };
+
+  // Need to add future functionality for this to work (may add in a new modal where you can choose the list you want to add the word to)
+  // const saveWordToList = async () => {
+  //   if (dailyWord && definition) {
+  //     try {
+        
+  //       const existingWord = await db.getFirstAsync(
+  //         "SELECT * FROM wordInList WHERE userID = ? AND listID = ? AND word = ?", 
+  //         [userID, listID, dailyWord]
+  //       );
+
+  //       if (existingWord) {
+  //         console.log(`⚠️ Word '${dailyWord}' already exists in '${listName}'.`);
+  //         alert("This word is already in your list!");
+  //         return;
+  //       }
+
+  //       await db.runAsync(`INSERT INTO wordInList (listID, userID, word, definition) VALUES (?, ?, ?, ?)`, 
+  //       [listID, userID, dailyWord, definition]
+  //       );
+  //     } catch (error) {
+  //       console.error("🚨 Error saving word:", error);
+  //     }
+  //   }
+  // }
 
   return (
     <ImageBackground
@@ -102,9 +111,10 @@ const LandingScreen = ({ route }) => {
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
 
+        {/*  Need to fix positioning of vocab list button to prevent it from being covered */}
         <TouchableOpacity
           style={styles.vocabListButton}
-          onPress={() => navigation.navigate("VocabListPage", { userID })}
+          onPress={() => navigation.navigate("VocabListPage", { userID, vocabHistoryID })}
         >
           <Text style={styles.vocabListText}>🚀 View Vocab Lists</Text>
         </TouchableOpacity>

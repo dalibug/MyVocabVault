@@ -26,6 +26,7 @@ export default function CreateAccount() {
       // user info storage
       await db.runAsync("INSERT INTO users (email, password) VALUES (?, ?)", [email, password]);
       
+      // Automatically creates vocab history list when account is created
       const result = await db.getFirstAsync("SELECT last_insert_rowid() AS lastID"); // Gets the latest userID
       const newUserID = result.lastID;
       await db.runAsync("INSERT INTO vocabLists (userID, listName) VALUES (?, ?)", [newUserID, "Vocab Word History"]);
