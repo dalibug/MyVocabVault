@@ -9,10 +9,14 @@ export default function CreateAccount() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // add security question and answer
+  const [securityQuestion, setSecurityQuestion] = useState("");
+  const [securityAnswer, setSecurityAnswer] = useState("");
+
   const handleSignUp = async () => {
     try {
-      if (!email || !password) {
-        Alert.alert("Error", "Email and password cannot be empty.");
+      if (!email || !password || !securityQuestion || !securityAnswer) {
+        Alert.alert("Error", "All fields are required.");
         return;
       }
 
@@ -23,8 +27,11 @@ export default function CreateAccount() {
         return;
       }
 
-      // user info storage
-      await db.runAsync("INSERT INTO users (email, password) VALUES (?, ?)", [email, password]);
+      // user info storage with security question and answer
+      await db.runAsync(
+        "INSERT INTO users (email, password, securityQuestion, securityAnswer) VALUES (?, ?, ?, ?)",
+        [email, password, securityQuestion, securityAnswer]
+      );
       
       const result = await db.getFirstAsync("SELECT last_insert_rowid() AS lastID"); // Gets the latest userID
       const newUserID = result.lastID;
@@ -55,6 +62,20 @@ export default function CreateAccount() {
         value={password}
         onChangeText={setPassword}
       />
+      {/* security question input */}
+      <TextInput
+        style={styles.input}
+        placeholder="Enter a Security Question"
+        value={securityQuestion}
+        onChangeText={setSecurityQuestion}
+      />
+      {/* security answer input */}
+      <TextInput
+        style={styles.input}
+        placeholder="Answer to the Security Question"
+        value={securityAnswer}
+        onChangeText={setSecurityAnswer}
+      />
       <Button title="Sign Up" onPress={handleSignUp} color="#3498db" />
     </View>
   );
@@ -83,5 +104,3 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
-
-
