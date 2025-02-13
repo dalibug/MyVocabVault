@@ -11,6 +11,8 @@ import TestLandingPage from "./screens/TestLandingPage";
 import ForgotPassword from "./screens/ForgotPassword";
 import VerifySecurityAnswer from "./screens/VerifySecurityAnswer";
 import ResetPassword from "./screens/ResetPassword";
+import Modal from "./screens/modal";
+import WordListPage from "./screens/wordList";
 
 const initDB = async (db: SQLiteDatabase) => {
   try {
@@ -22,6 +24,27 @@ const initDB = async (db: SQLiteDatabase) => {
         securityQuestion TEXT NOT NULL,
         securityAnswer TEXT NOT NULL
       );
+    `);
+
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS vocabLists (
+        listID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        userID INTEGER NOT NULL,
+        listName TEXT NOT NULL,
+        FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE
+      );
+    `);
+
+    await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS wordInList (
+          wordID INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+          listID INTEGER NOT NULL,
+          userID INTEGER NOT NULL,
+          word TEXT NOT NULL,
+          definition TEXT NOT NULL,
+          FOREIGN KEY (userID) REFERENCES users(userID) ON DELETE CASCADE
+          FOREIGN KEY (listID) REFERENCES vocabLists(listID) ON DELETE CASCADE
+        )
     `);
   } catch (error) {
     console.error("Error initializing database:", error);
@@ -44,6 +67,11 @@ export default function AppNavigator() {
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{ title: "Forgot Password" }} />
         <Stack.Screen name="VerifySecurityAnswer" component={VerifySecurityAnswer} options={{ title: "Security Question" }} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} options={{ title: "Reset Password" }} />
+        <Stack.Screen name="WordListPage" component={WordListPage}
+          options={{ title: "Word List" }} />
+
+        <Stack.Screen name="Modal" component={Modal}
+          options={{ title: "Creating a New List" }} />
       </Stack.Navigator>
     </SQLiteProvider>
   );
