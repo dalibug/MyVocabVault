@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
@@ -9,36 +9,34 @@ export default function CreateAccount() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // add security question and answer
-  const [securityQuestion, setSecurityQuestion] = useState("");
-  const [securityAnswer, setSecurityAnswer] = useState("");
+  // ✅ Set the back button text to "Back"
+  useEffect(() => {
+    navigation.setOptions({ headerBackTitle: "Back" });
+  }, [navigation]);
 
   const handleSignUp = async () => {
     try {
-      if (!email || !password || !securityQuestion || !securityAnswer) {
-        Alert.alert("Error", "All fields are required.");
+      if (!email || !password) {
+        Alert.alert("Error", "Email and password cannot be empty.");
         return;
       }
 
-      // check if the account has been registered
+      // Check if the account has been registered
       const existingUser = await db.getFirstAsync("SELECT * FROM users WHERE email = ?", [email]);
       if (existingUser) {
         Alert.alert("Error", "This email is already registered.");
         return;
       }
 
-      // user info storage with security question and answer
-      await db.runAsync(
-        "INSERT INTO users (email, password, securityQuestion, securityAnswer) VALUES (?, ?, ?, ?)",
-        [email, password, securityQuestion, securityAnswer]
-      );
-      
-      const result = await db.getFirstAsync("SELECT last_insert_rowid() AS lastID"); // Gets the latest userID
+      // Store user info
+      await db.runAsync("INSERT INTO users (email, password) VALUES (?, ?)", [email, password]);
+
+      const result = await db.getFirstAsync("SELECT last_insert_rowid() AS lastID"); // Get latest userID
       const newUserID = result.lastID;
       await db.runAsync("INSERT INTO vocabLists (userID, listName) VALUES (?, ?)", [newUserID, "Vocab Word History"]);
 
       Alert.alert("Sign Up Successful", "You can now log in.");
-      navigation.navigate("LoginPage"); // jump to login page
+      navigation.navigate("LoginPage"); // Redirect to login page
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       Alert.alert("Sign Up Failed", errorMessage);
@@ -50,7 +48,7 @@ export default function CreateAccount() {
       <Text style={styles.title}>Create Account</Text>
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="User Name"
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
@@ -62,21 +60,7 @@ export default function CreateAccount() {
         value={password}
         onChangeText={setPassword}
       />
-      {/* security question input */}
-      <TextInput
-        style={styles.input}
-        placeholder="Enter a Security Question"
-        value={securityQuestion}
-        onChangeText={setSecurityQuestion}
-      />
-      {/* security answer input */}
-      <TextInput
-        style={styles.input}
-        placeholder="Answer to the Security Question"
-        value={securityAnswer}
-        onChangeText={setSecurityAnswer}
-      />
-      <Button title="Sign Up" onPress={handleSignUp} color="#3498db" />
+      <Button title="Sign Up" onPress={handleSignUp} color="#FF5733" />
     </View>
   );
 }
@@ -86,7 +70,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#71a2a8", // Background color updated
     padding: 20,
   },
   title: {
@@ -104,3 +88,5 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 });
+
+export default CreateAccount;

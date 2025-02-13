@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
@@ -13,7 +13,7 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     try {
-      const userData = await db.getFirstAsync("SELECT * FROM users WHERE email = ?", [email]);
+      const userData = await db.getFirstAsync("SELECT * FROM users WHERE EMAIL = ?", [email]);
 
       if (!userData) {
         Alert.alert("Login Failed", "User not found.");
@@ -22,7 +22,7 @@ export default function LoginPage() {
 
       const validUser = await db.getFirstAsync("SELECT * FROM users WHERE email = ? AND password = ?", [email, password]);
       if (validUser) {
-        navigation.navigate("LandingPage", { userID: validUser.userID }); // jump to landing page
+        navigation.navigate("LandingPage", { userID: validUser.userID });  // Jump to LandingPage
       } else {
         Alert.alert("Login Failed", "Incorrect password.");
       }
@@ -34,10 +34,10 @@ export default function LoginPage() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Log In</Text>
+      <Text style={styles.title}>Welcome Back!</Text>
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="User Name"
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
@@ -50,11 +50,6 @@ export default function LoginPage() {
         onChangeText={setPassword}
       />
       <Button title="Log In" onPress={handleLogin} color="#FF5733" />
-
-      {/* add forgot password button */}
-      <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
-        <Text style={styles.forgotPassword}>Forgot/Reset Password?</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -64,7 +59,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#adba95",
     padding: 20,
   },
   title: {
@@ -81,9 +76,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 10,
   },
-  forgotPassword: {
-    marginTop: 10,
-    color: "blue",
-    textDecorationLine: "underline",
-  },
 });
+
+export default LoginPage;
