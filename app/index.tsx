@@ -8,7 +8,6 @@ import LandingPage from "./screens/LandingPage";
 import VocabListPage from "./screens/VocabListPage";
 import CreateAccount from "./screens/createAccount";
 import TestLandingPage from "./screens/TestLandingPage";
-import Modal from "./modal";
 import ForgotPassword from "./screens/ForgotPassword";
 import VerifySecurityAnswer from "./screens/VerifySecurityAnswer";
 import ResetPassword from "./screens/ResetPassword";
@@ -42,7 +41,6 @@ export default function AppNavigator() {
         <Stack.Screen name="LandingPage" component={LandingPage} options={{ headerShown: false }} />
         <Stack.Screen name="TestLandingPage" component={TestLandingPage} options={{ headerShown: false }} />
         <Stack.Screen name="VocabListPage" component={VocabListPage} options={{ title: "Vocab Lists" }} />
-        <Stack.Screen name="Modal" component={Modal} options={{ presentation: "testing modal" }} />
         <Stack.Screen name="ForgotPassword" component={ForgotPassword} options={{ title: "Forgot Password" }} />
         <Stack.Screen name="VerifySecurityAnswer" component={VerifySecurityAnswer} options={{ title: "Security Question" }} />
         <Stack.Screen name="ResetPassword" component={ResetPassword} options={{ title: "Reset Password" }} />

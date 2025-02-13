@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { View, FlatList, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import * as SQLite from "expo-sqlite"; // Import SQLite
+import { useSQLiteContext } from "expo-sqlite";
 
 const Item = ({ item, onPress, backgroundColor, textColor }) => (
   <TouchableOpacity onPress={onPress} style={[styles.item, { backgroundColor }]}>
@@ -15,57 +15,37 @@ const VocabListPage = ({ route }) => {
   const navigation = useNavigation();
   const [vocabLists, setVocabLists] = useState([]);
   const [vocabHistory, setVocabHistory] = useState([]); // Stores history list
-  const { userID } = route.params;
-  const [db, setDB] = useState<SQLite.SQLiteDatabase | null>(null);
+  const { userID, vocabHistoryID } = route.params;
   const [selectedId, setSelectedId] = useState(null);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const dbInstance = await SQLite.openDatabaseAsync("vocabVault.db");
-        setDB(dbInstance);
-        console.log("Database opened successfully");
-
-        // Ensure the vocabHistory table exists
-        await dbInstance.runAsync(
-          `CREATE TABLE IF NOT EXISTS vocabHistory (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            word TEXT NOT NULL UNIQUE, 
-            definition TEXT NOT NULL,
-            userID TEXT NOT NULL
-          );`
-        );
-        console.log("vocabHistory table is ready");
-      } catch (error) {
-        console.error("Error opening database:", error);
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const db = useSQLiteContext();
 
   useEffect(() => {
     if (db) {
-      const loadVocabLists = async () => {
-        try {
-          console.log("Fetching vocab lists for userID:", userID);
-          const results = await db.getAllAsync("SELECT * FROM vocabLists WHERE userID = ?", [userID]);
-          setVocabLists(results);
-        } catch (error) {
-          console.error("Error loading vocab lists:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
-      loadVocabLists();
+      const unsubscribe = navigation.addListener("focus", () => {
+        const loadVocabLists = async () => {
+          try {
+            console.log("Fetching vocab lists for userID:", userID);
+
+            const results = await db.getAllAsync("SELECT * FROM vocabLists WHERE userID = ? AND listID != ?", [userID, vocabHistoryID.listID]);
+            setVocabLists(results);
+          } catch (error) {
+            console.error("Error loading vocab lists:", error);
+          } finally {
+            setLoading(false);
+          }
+        };
+        loadVocabLists();
+      })
+      return unsubscribe;
     }
-  }, [db, userID]);
+  }, [db, userID, navigation]);
 
   useEffect(() => {
     if (db) {
       const loadHistory = async () => {
         try {
           console.log("Fetching vocab history...");
-          const history = await db.getAllAsync("SELECT * FROM vocabHistory WHERE userID = ?", [userID]);
+          const history = await db.getAllAsync("SELECT * FROM wordInList WHERE userID = ? AND listID = ?", [userID, vocabHistoryID]);
           setVocabHistory(history);
         } catch (error) {
           console.error("Error loading vocab history:", error);
@@ -84,7 +64,7 @@ const VocabListPage = ({ route }) => {
         item={item}
         onPress={() => {
           setSelectedId(item.listID);
-          alert("Feature in progress: Viewing vocab list");
+          navigation.navigate("WordListPage", { userID, listID: item.listID });
         }}
         backgroundColor={backgroundColor}
         textColor={color}
@@ -108,7 +88,7 @@ const VocabListPage = ({ route }) => {
                 <Text style={styles.definition}>{item.definition}</Text>
               </View>
             )}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => item.wordID.toString()}
           />
         )}
 
@@ -117,7 +97,7 @@ const VocabListPage = ({ route }) => {
         {loading ? (
           <Text>Loading Vocab Lists...</Text>
         ) : vocabLists.length === 0 ? (
-          <Text>No Vocab Lists Found</Text>
+          <Text style={styles.noHistoryText}>No Created Vocab Lists Found</Text>
         ) : (
           <FlatList
             data={vocabLists}
@@ -127,7 +107,7 @@ const VocabListPage = ({ route }) => {
         )}
 
         {/* Floating Button to Add a New List */}
-        <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate("modal")}>
+        <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate("Modal", { userID })} accessibilityLabel="Create New List">
           <Text style={styles.floatingButtonSign}>+</Text>
         </TouchableOpacity>
       </SafeAreaView>
