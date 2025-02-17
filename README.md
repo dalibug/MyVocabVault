@@ -52,6 +52,29 @@ My role surrounded implementing most of the vocab list functionality and local d
   + I would have had a concrete plan from the start on how things should look and made it so that my code worked similarly to how people online did it.
 + What is the most valuable thing you learned?
   + The most valuable thing for me was how to deal with the merging of GitHub pull requests since everything started making sense after multiple occurrences.
+## Dalia Cabrera Hurtado
+
+### Dalia's Contributions  
+- **[Dalia's pull requests](here)**  
+- **[Dalia’s GitHub issues](here)**  
+
+### What was your role / which stories did you work on?  
+Dalia worked on the landing page & implementing its functionality for this app, which included the API integration.  
+
+### What was the biggest challenge?  
+My biggest challenge was managing issues after updating my local device to match the remote code.  
+
+### Why was it a challenge?  
+It was a challenge because, at times, finding a solution wasn’t straightforward—so that the code was able to run on my local device. I believe this had something to do with our `.gitignore` file.  
+
+### Favorite / most interesting part of this project  
+My favorite part of the project was seeing everything come together and navigating challenges with my team members. I enjoyed designing the landing page and coming up with new ideas to improve the app.  
+
+### If you could do it over, what would you change?  
+If I could do it over, I wouldn’t use a JSON file for the new vocabulary words but rather use an API or an LLM.  
+
+### What is the most valuable thing you learned?  
+The most valuable things I learned were how to deal with GitHub issues and how to partition work when working on a group project.
 
 
 ## Conclusion
