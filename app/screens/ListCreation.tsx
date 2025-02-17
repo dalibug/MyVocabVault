@@ -1,35 +1,38 @@
-import { Stack } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 
-export default function Modal({ route }) {
+export default function ListCreation({ route }) {
   const [listName, setListName] = useState("");
   const navigation = useNavigation();
-  // get the database context
   const db = useSQLiteContext();
   const { userID } = route.params;
 
-  const handleListCreation = useCallback(async () => {
+  const handleListCreation = async () => {
     try {
-      const response = await db.runAsync("INSERT INTO vocabLists (userID, listName) VALUES (?, ?)",
+      if (!listName) {
+        Alert.alert("Error", "Please enter a list name.");
+        return;
+      }
+      const response = await db.runAsync(
+        "INSERT INTO vocabLists (userID, listName) VALUES (?, ?)",
         [userID, listName]
       );
       console.log("List created successfully");
       navigation.goBack();
-
     } catch (error) {
       console.error("Error saving item:", error);
     }
-  }, [userID, listName, navigation, db]);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -42,7 +45,7 @@ export default function Modal({ route }) {
         <TextInput
           placeholder="Enter Vocab List Name"
           value={listName}
-          onChangeText={((text) => setListName(text))}
+          onChangeText={(text) => setListName(text)}
           style={styles.textInput}
         />
       </View>
@@ -57,7 +60,7 @@ export default function Modal({ route }) {
           onPress={handleListCreation}
           style={[styles.button, { backgroundColor: "blue" }]}
         >
-          <Text style={styles.buttonText}>{"Create List"}</Text>
+          <Text style={styles.buttonText}>Create List</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

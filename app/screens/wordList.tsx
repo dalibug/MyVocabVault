@@ -1,35 +1,55 @@
 import React, { useState, useEffect } from "react";
-import { View, FlatList, StyleSheet, Text } from "react-native";
+import { View, FlatList, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useSQLiteContext } from "expo-sqlite";
+import { useNavigation } from "@react-navigation/native";
 
 const WordListPage = ({ route }) => {
   const [loading, setLoading] = useState(true);
+  const [listName, setListName] = useState<string | null>(null);
   const [wordList, setWordList] = useState([]);
+  const navigation = useNavigation();
   const { userID, listID } = route.params;
   const db = useSQLiteContext();
 
   useEffect(() => {
-    if (db) {
-      const loadWordList = async () => {
-        try {
-          const vocabWords = await db.getAllAsync("SELECT * FROM wordInList WHERE userID = ? AND listID = ?", [userID, listID]);
-          setWordList(vocabWords);
-        } catch (error) {
-          console.error("Error loading vocab history:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
+    if (db && userID && listID) {
       loadWordList();
     }
-  }, [db, userID]);
+  }, [db, userID, listID]);
+
+  const loadWordList = async () => {
+    try {
+      // Debugging
+      // console.log(`UserID: ${userID} and ListID: ${listID}`);
+      const existingList = await db.getFirstAsync("SELECT * FROM vocabLists WHERE userID = ? AND listID = ?", [userID, listID]);
+      setListName(existingList.listName);
+
+      const vocabWords = await db.getAllAsync("SELECT * FROM wordInList WHERE userID = ? AND listID = ?", [userID, `${listID}`]);
+      setWordList(vocabWords);
+      // console.log("Vocab Words:", vocabWords); // Debugging Purposes
+    } catch (error) {
+      console.error("Error loading vocab words:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <SafeAreaProvider>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("VocabListPage", { userID })}>
+          <Text style={styles.backButtonText}>&#8249;- Back</Text>
+        </TouchableOpacity>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>{listName}</Text>
+        </View>
+        {/* Added for center alignment */}
+        <View style={styles.rightContent} />
+      </View>
+
       <SafeAreaView style={styles.container}>
         {/* Word List Section */}
-        <Text style={styles.sectionTitle}>Word List</Text>
         {wordList.length === 0 ? (
           <Text style={styles.noWordsText}>No words added yet</Text>
         ) : (
@@ -50,6 +70,34 @@ const WordListPage = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    backgroundColor: "white",
+    borderBottomColor: '#ddd',
+    justifyContent: 'space-between',
+  },
+  backButton: {
+    padding: 8,
+  },
+  backButtonText: {
+    color: "blue",
+  },
+  titleContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  rightContent: {
+    width: 50,
+    alignItems: 'flex-end',
+  },
   container: {
     flex: 1,
     padding: 16,

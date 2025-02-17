@@ -24,11 +24,11 @@ export default function CreateAccount() {
         console.error("Error: Unexpected database response", result);
         return;
       }
-      
+
       console.log("Database columns:", result); // make record and return data
-      
+
       const columns = result.map((col) => col.name);
-      
+
       if (!columns.includes("securityQuestion")) {
         await db.runAsync("ALTER TABLE users ADD COLUMN securityQuestion TEXT;");
       }
@@ -46,13 +46,13 @@ export default function CreateAccount() {
         Alert.alert("Error", "All fields are required.");
         return;
       }
-      
+
       const existingUser = await db.getFirstAsync("SELECT * FROM users WHERE email = ?", [email]);
       if (existingUser) {
         Alert.alert("Error", "This email is already registered.");
         return;
       }
-      
+
       await db.runAsync(
         "INSERT INTO users (email, password, securityQuestion, securityAnswer) VALUES (?, ?, ?, ?)",
         [email, password, securityQuestion, securityAnswer]
@@ -61,7 +61,7 @@ export default function CreateAccount() {
       const result = await db.getFirstAsync("SELECT last_insert_rowid() AS lastID");
       const newUserID = result.lastID;
       await db.runAsync("INSERT INTO vocabLists (userID, listName) VALUES (?, ?)", [newUserID, "Vocab Word History"]);
-      
+
       Alert.alert("Sign Up Successful", "You can now log in.");
       navigation.navigate("LoginPage");
     } catch (error) {

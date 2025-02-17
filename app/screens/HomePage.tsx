@@ -8,7 +8,7 @@ export default function HomePage() {
   const navigation = useNavigation();
 
   return (
-    <ImageBackground 
+    <ImageBackground
       source={require("../../assets/images/HP_background.png")} // ✅ Background Image
       style={styles.background}
     >
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   box: {
     width: "80%",
     padding: 20,
-    backgroundColor: "rgba(255, 255, 255, 0.8)", 
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
     borderRadius: 10,
     borderWidth: 2,
     borderColor: "#222222",
