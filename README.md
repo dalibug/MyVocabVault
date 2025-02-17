@@ -1,50 +1,44 @@
-# Welcome to your Expo app 👋
+# Project 01 Retrospective and overview
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+[Github Repo](https://github.com/dalibug/MyVocabVault.git)
 
-## Get started
+## Overview
 
-1. Install dependencies
 
-   ```bash
-   npm install
-   ```
+## Introduction
 
-2. Start the app
+* Our team uses a discord channel to manage our communication after class.
+* Based on the requirements from the instructions for this project, we initially designed 12 issues.
+* 13 issues completed so far.
 
-   ```bash
-    npx expo start
-   ```
+## Team Retrospective
 
-In the output, you'll find options to open the app in a
+### Junchen Song
+* Junchen's pull requests are [here](https://github.com/dalibug/MyVocabVault/issues)
+* Junchen's Github issues are [here](https://github.com/dalibug/MyVocabVault/pulls?q=is%3Apr+is%3Aclosed)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+#### What was your role / which stories did you work on
+Junchen mostly works on user account management of this app, including the corresponding app pages, user creation, password reset, and authentication based on the local database.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
++ What was the biggest challenge? 
+  + Probably getting used to the expo/nodejs tools. Since this was my first time using expo to develop an app, I faced many errors.
++ Why was it a challenge?
+  + There are two reasons to answer this question.
+  + One is that since this is our first time using Expo to develop the app, solving the issues about user account management based on the database is challenging.
+  + The other is that, sometimes, due to some unfamiliar reason, merging pull requests was difficult.
++ Favorite / most interesting part of this project
+  + Setting up the security question to reset passwords is interesting. Mechanism completion satisfied me.
++ If you could do it over, what would you change?
+  + As for now, I do not know what to change. Instead, I might add more functionality regarding user management. 
++ What is the most valuable thing you learned?
+  + Learning about GitHub repo management.
 
-## Get a fresh project
 
-When you're ready, run:
+## Conclusion
 
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- How successful was the project?
+  - 
+- What was the largest victory?
+  - Fixing all the merge conflicts is one of our biggest victories.
+- Final assessment of the project
+- -
