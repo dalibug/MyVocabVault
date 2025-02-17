@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
     fontSize: 20,
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   listName: {
-    fontSize: 32,
+    fontSize: 25,
     fontWeight: "bold",
   },
 });

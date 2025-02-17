@@ -8,7 +8,7 @@ import {
   TextInput,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 
 export default function ListCreation({ route }) {
@@ -35,6 +35,18 @@ export default function ListCreation({ route }) {
   };
 
   return (
+    <SafeAreaProvider>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("LandingPage", { userID })}>
+          <Text style={styles.backButtonText}>&#8249;- Back</Text>
+        </TouchableOpacity>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Create a New Vocab List</Text>
+        </View>
+        {/* Added for center alignment */}
+        <View style={styles.rightContent} />
+      </View>
+
     <SafeAreaView style={styles.container}>
       <View
         style={{
@@ -64,10 +76,39 @@ export default function ListCreation({ route }) {
         </TouchableOpacity>
       </View>
     </SafeAreaView>
+    </SafeAreaProvider>
   );
-}
+};
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    backgroundColor: "white",
+    borderBottomColor: '#ddd',
+    justifyContent: 'space-between',
+  },
+  backButton: {
+    padding: 8,
+  },
+  backButtonText: {
+    color: "blue",
+  },
+  titleContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  rightContent: {
+    width: 50,
+    alignItems: 'flex-end',
+  },
   container: {
     flex: 1,
     alignItems: "center",

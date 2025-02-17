@@ -111,15 +111,19 @@ export default function PickList({ route }) {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        <View >
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text>Back</Text>
-          </TouchableOpacity>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backButtonText}>&#8249;- Back</Text>
+        </TouchableOpacity>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Select List to Add "{dailyWord}"</Text>
         </View>
+        {/* Added for center alignment */}
+        <View style={styles.rightContent} />
+      </View>
 
+      <SafeAreaView style={styles.container}>
         {/* Vocab Lists Section */}
-        <Text style={styles.sectionTitle}>Your Vocab Lists</Text>
         {loading ? (
           <Text>Loading Vocab Lists...</Text>
         ) : vocabLists.length === 0 ? (
@@ -137,34 +141,38 @@ export default function PickList({ route }) {
 };
 
 const styles = StyleSheet.create({
-  // need to fix header and comments
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between', // Distribute space between back button and title
-    paddingHorizontal: 16, // Consistent horizontal padding
-    backgroundColor: 'white', // Header background color
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderBottomWidth: 1,
+    backgroundColor: "white",
     borderBottomColor: '#ddd',
+    justifyContent: 'space-between',
   },
   backButton: {
-    marginLeft: -8, // Adjust as needed
+    padding: 8,
   },
   backButtonText: {
-    color: 'blue',
-    fontSize: 16,
+    color: "blue",
   },
   titleContainer: {
-    flex: 1, // Allow title container to take up available space
-    alignItems: 'center', // Center the title horizontally
+    flex: 1,
+    alignItems: 'center',
   },
   title: {
+    textAlign: "center",
     fontSize: 18,
     fontWeight: 'bold',
   },
+  rightContent: {
+    width: 50,
+    alignItems: 'flex-end',
+  },
   container: {
     flex: 1,
-    padding: 16,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
     fontSize: 20,
@@ -183,7 +191,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   listName: {
-    fontSize: 32,
+    fontSize: 25,
     fontWeight: "bold",
   },
 });
