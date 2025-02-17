@@ -1,37 +1,52 @@
-import { Stack } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 
-export default function Modal({ route }) {
+export default function ListCreation({ route }) {
   const [listName, setListName] = useState("");
   const navigation = useNavigation();
-  // get the database context
   const db = useSQLiteContext();
   const { userID } = route.params;
 
-  const handleListCreation = useCallback(async () => {
+  const handleListCreation = async () => {
     try {
-      const response = await db.runAsync("INSERT INTO vocabLists (userID, listName) VALUES (?, ?)",
+      if (!listName) {
+        Alert.alert("Error", "Please enter a list name.");
+        return;
+      }
+      const response = await db.runAsync(
+        "INSERT INTO vocabLists (userID, listName) VALUES (?, ?)",
         [userID, listName]
       );
       console.log("List created successfully");
       navigation.goBack();
-
     } catch (error) {
       console.error("Error saving item:", error);
     }
-  }, [userID, listName, navigation, db]);
+  };
 
   return (
+    <SafeAreaProvider>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("LandingPage", { userID })}>
+          <Text style={styles.backButtonText}>&#8249;- Back</Text>
+        </TouchableOpacity>
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Create a New Vocab List</Text>
+        </View>
+        {/* Added for center alignment */}
+        <View style={styles.rightContent} />
+      </View>
+
     <SafeAreaView style={styles.container}>
       <View
         style={{
@@ -42,7 +57,7 @@ export default function Modal({ route }) {
         <TextInput
           placeholder="Enter Vocab List Name"
           value={listName}
-          onChangeText={((text) => setListName(text))}
+          onChangeText={(text) => setListName(text)}
           style={styles.textInput}
         />
       </View>
@@ -57,14 +72,43 @@ export default function Modal({ route }) {
           onPress={handleListCreation}
           style={[styles.button, { backgroundColor: "blue" }]}
         >
-          <Text style={styles.buttonText}>{"Create List"}</Text>
+          <Text style={styles.buttonText}>Create List</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
+    </SafeAreaProvider>
   );
-}
+};
 
 const styles = StyleSheet.create({
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    backgroundColor: "white",
+    borderBottomColor: '#ddd',
+    justifyContent: 'space-between',
+  },
+  backButton: {
+    padding: 8,
+  },
+  backButtonText: {
+    color: "blue",
+  },
+  titleContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  rightContent: {
+    width: 50,
+    alignItems: 'flex-end',
+  },
   container: {
     flex: 1,
     alignItems: "center",

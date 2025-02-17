@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ImageBackground } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ImageBackground, Button } from "react-native";
 import wordList from "../../assets/advanced_words.json";
 import { useNavigation } from "@react-navigation/native";
 import { useSQLiteContext } from "expo-sqlite";
@@ -16,6 +16,7 @@ const LandingScreen = ({ route }) => {
 
   useEffect(() => {
     fetchDailyWord();
+    getVocabHistoryID();
   }, []);
 
   const fetchDailyWord = async () => {
@@ -35,10 +36,6 @@ const LandingScreen = ({ route }) => {
 
       setDailyWord(randomWord);
       setDefinition(fetchedDefinition);
-
-      // gets the listID of the vocab history list
-      const vocabHistoryID = await db.getFirstAsync("SELECT listID FROM vocabLists WHERE userID = ?", [userID]);
-      setVocabHistoryID(vocabHistoryID);
     } catch (error) {
       console.error("Error fetching daily word:", error);
       setDailyWord("No word available");
@@ -48,12 +45,19 @@ const LandingScreen = ({ route }) => {
     }
   };
 
+  const getVocabHistoryID = async () => {
+    // gets the listID of the vocab history list
+    const vocabHistoryID = await db.getFirstAsync("SELECT listID FROM vocabLists WHERE userID = ? ORDER BY listID ASC LIMIT 1", [userID]);
+    // console.log("User Vocab History ID: ", vocabHistoryID.listID); // Debugging
+    setVocabHistoryID(vocabHistoryID.listID);
+  }
+
   // Might need to add a limit to how many words can be saved to history
   const saveWordToHistory = async () => {
     if (dailyWord && definition) {
       try {
         const existingWord = await db.getFirstAsync(
-          "SELECT * FROM wordInList WHERE userID = ? AND listID = ? AND word = ?", 
+          "SELECT * FROM wordInList WHERE userID = ? AND listID = ? AND word = ?",
           [userID, vocabHistoryID, dailyWord]
         );
 
@@ -63,10 +67,16 @@ const LandingScreen = ({ route }) => {
           return;
         }
 
-        await db.runAsync(
-          "INSERT INTO wordInList (listID, userID, word, definition) VALUES (?, ?, ?, ?)", 
-        [vocabHistoryID, userID, dailyWord, definition]
+        const response = await db.runAsync(
+          "INSERT INTO wordInList (listID, userID, word, definition) VALUES (?, ?, ?, ?)",
+          [vocabHistoryID, userID, dailyWord, definition]
         );
+
+        if (response && response.changes > 0) { // Check if changes were made
+          console.log("Insertion successful!");
+        } else {
+          console.log("Insertion failed");
+        }
 
         console.log(`✅ Saved '${dailyWord}' to vocabHistory`);
         alert("Word saved to history!");
@@ -76,47 +86,14 @@ const LandingScreen = ({ route }) => {
     }
   };
 
-  // Need to add future functionality for this to work (may add in a new modal where you can choose the list you want to add the word to)
-  // const saveWordToList = async () => {
-  //   if (dailyWord && definition) {
-  //     try {
-        
-  //       const existingWord = await db.getFirstAsync(
-  //         "SELECT * FROM wordInList WHERE userID = ? AND listID = ? AND word = ?", 
-  //         [userID, listID, dailyWord]
-  //       );
-
-  //       if (existingWord) {
-  //         console.log(`⚠️ Word '${dailyWord}' already exists in '${listName}'.`);
-  //         alert("This word is already in your list!");
-  //         return;
-  //       }
-
-  //       await db.runAsync(`INSERT INTO wordInList (listID, userID, word, definition) VALUES (?, ?, ?, ?)`, 
-  //       [listID, userID, dailyWord, definition]
-  //       );
-  //     } catch (error) {
-  //       console.error("🚨 Error saving word:", error);
-  //     }
-  //   }
-  // }
-
   return (
     <ImageBackground
-      source={require("../../assets/images/LP_background.png")} 
+      source={require("../../assets/images/LP_background.png")}
       style={styles.background}
     >
       <View style={styles.overlay}>
         <TouchableOpacity style={styles.logoutButton} onPress={() => navigation.navigate("HomePage")}>
           <Text style={styles.logoutText}>Log Out</Text>
-        </TouchableOpacity>
-
-        {/*  Need to fix positioning of vocab list button to prevent it from being covered */}
-        <TouchableOpacity
-          style={styles.vocabListButton}
-          onPress={() => navigation.navigate("VocabListPage", { userID, vocabHistoryID })}
-        >
-          <Text style={styles.vocabListText}>🚀 View Vocab Lists</Text>
         </TouchableOpacity>
 
         <Text style={styles.sectionTitle}>Random Vocabulary Word: </Text>
@@ -140,6 +117,25 @@ const LandingScreen = ({ route }) => {
         <TouchableOpacity style={styles.saveButton} onPress={saveWordToHistory}>
           <Text style={styles.saveButtonText}>✅ Save Word to History</Text>
         </TouchableOpacity>
+
+        {/*  Need to create custom style for button (Currently using Save Button Style) */}
+        <TouchableOpacity
+          style={styles.saveButton}
+          onPress={() => navigation.navigate("VocabListPage", { userID, vocabHistoryID })}
+        >
+          <Text style={styles.vocabListText}>🚀 View History & Vocab Lists</Text>
+        </TouchableOpacity>
+
+        {/*  Need to create custom style for button (Currently using Save Button Style) */}
+        <TouchableOpacity style={styles.saveButton} onPress={() => navigation.navigate("ListCreation", { userID })} accessibilityLabel="Create New List">
+          <Text style={styles.refreshButtonText}>Create New List</Text>
+        </TouchableOpacity>
+
+        {/*  Need to create custom style for button (Currently using Save Button Style) */}
+        <TouchableOpacity style={styles.saveButton} onPress={() => navigation.navigate("PickList", { userID, vocabHistoryID, dailyWord, definition })} accessibilityLabel="Save Word to Vocab List">
+          <Text style={styles.refreshButtonText}>Save Word to Vocab List</Text>
+        </TouchableOpacity>
+
       </View>
     </ImageBackground>
   );
@@ -156,7 +152,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(255, 255, 255, 0.3)", 
+    backgroundColor: "rgba(255, 255, 255, 0.3)",
     padding: 20,
   },
   logoutButton: {
@@ -193,10 +189,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   textBox: {
-    backgroundColor: "rgba(255, 255, 255, 0.62)", 
-    padding: 15, 
-    borderRadius: 10, 
-    borderWidth: 2, 
+    backgroundColor: "rgba(255, 255, 255, 0.62)",
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 2,
     borderColor: "#FFA500",
     marginVertical: 10, //Adds spacing around the box
     alignItems: "center", //Centers text inside the box
@@ -211,7 +207,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontStyle: "italic",
     fontWeight: "bold",
-    color: "#222222",  
+    color: "#222222",
     textAlign: "center",
     paddingHorizontal: 10,
   },

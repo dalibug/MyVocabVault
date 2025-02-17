@@ -1,16 +1,24 @@
+import { useSQLiteContext } from "expo-sqlite";
 import React, { useState, useEffect } from "react";
-import { View, FlatList, StyleSheet, Text, TouchableOpacity } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import { useSQLiteContext } from "expo-sqlite";
 
-const VocabListPage = ({ route }) => {
+export default function PickList({ route }) {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
-  const [vocabLists, setVocabLists] = useState([]);
-  const { userID } = route.params;
-  const [selectedId, setSelectedId] = useState(null);
   const db = useSQLiteContext();
+  const [vocabLists, setVocabLists] = useState([]);
+  const { userID, vocabHistoryID, dailyWord, definition } = route.params;
+  const [selectedID, setSelectedID] = useState<number | null>(null);
+
+  let isMounted = true;
 
   useEffect(() => {
     // Added due to risk of errors
@@ -19,9 +27,11 @@ const VocabListPage = ({ route }) => {
     if (db) {
       const loadVocabLists = async () => {
         try {
-          // console.log("Fetching vocab lists for userID:", userID); // Debugging
+          // Debugging
+          // console.log(`Fetching vocab lists for userID: ${userID} and vocabHistoryID: ${vocabHistoryID}`);
 
-          const results = await db.getAllAsync("SELECT * FROM vocabLists WHERE userID = ?", [userID]);
+          // gets all created lists from user except for Vocab History
+          const results = await db.getAllAsync("SELECT * FROM vocabLists WHERE userID = ? AND listID != ?", [userID, vocabHistoryID]);
           if (isMounted) {
             setVocabLists(results);
           }
@@ -48,18 +58,16 @@ const VocabListPage = ({ route }) => {
 
 
   const renderItem = ({ item }) => {
-    // first color is if the item is selected otherwise it appears as the second color
-    const backgroundColor = item.listID === selectedId ? "#aed6f1" : "#5dade2";
-    const color = item.listID === selectedId ? "black" : "white";
+    const backgroundColor = item.listID === selectedID ? "#aed6f1" : "#5dade2";
+    const color = item.listID === selectedID ? "black" : "white";
 
     return (
       <Item
         item={item}
         onPress={() => {
-          setSelectedId(item.listID);
-          // Debugging
-          // console.log("Item List ID: ", item.listID);
-          navigation.navigate("WordListPage", { userID, listID: item.listID });
+          setSelectedID(item.listID);
+          saveWordToList(item.listID);
+          navigation.goBack();
         }}
         backgroundColor={backgroundColor}
         textColor={color}
@@ -67,14 +75,48 @@ const VocabListPage = ({ route }) => {
     );
   };
 
+  const saveWordToList = async (chosenID) => {
+    if (dailyWord && definition) {
+      try {
+        const existingWord = await db.getFirstAsync(
+          "SELECT * FROM wordInList WHERE userID = ? AND listID = ? AND word = ?",
+          [userID, chosenID, dailyWord]
+        );
+
+        const existingList = await db.getFirstAsync("SELECT * FROM vocabLists WHERE userID = ? AND listID = ?", [userID, chosenID]);
+        const chosenListName = existingList.listName;
+
+        if (existingWord) {
+          console.log(`⚠️ Word '${dailyWord}' already exists in ${chosenListName}.`);
+          alert(`This word is already in ${chosenListName}!`);
+          return;
+        }
+
+        const response = await db.runAsync(
+          "INSERT INTO wordInList (userID, listID, word, definition) VALUES (?, ?, ?, ?)",
+          [userID, chosenID, dailyWord, definition]
+        );
+
+        if (response && response.changes > 0) { // Check if changes were made
+          console.log(`✅ Saved '${dailyWord}' to ${chosenListName}.`);
+          alert(`Word saved to ${chosenListName}!`);
+        } else {
+          console.log(`Failed to save word to ${chosenListName}.`);
+        }
+      } catch (error) {
+        console.error("🚨 Error saving word:", error);
+      }
+    }
+  };
+
   return (
     <SafeAreaProvider>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("LandingPage", { userID })}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backButtonText}>&#8249;- Back</Text>
         </TouchableOpacity>
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>Your Vocab Lists</Text>
+          <Text style={styles.title}>Select List to Add "{dailyWord}"</Text>
         </View>
         {/* Added for center alignment */}
         <View style={styles.rightContent} />
@@ -99,7 +141,6 @@ const VocabListPage = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  // need to fix header and comments
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -121,6 +162,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
+    textAlign: "center",
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -153,5 +195,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-
-export default VocabListPage;
