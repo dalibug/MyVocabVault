@@ -33,6 +33,26 @@ Junchen mostly works on user account management of this app, including the corre
 + What is the most valuable thing you learned?
   + Learning about GitHub repo management.
 
+### Jayson Basilio
+* Jayson's pull requests are [here](https://github.com/dalibug/MyVocabVault/pulls?q=is%3Apr+is%3Aclosed+author%3AJaysonB4)
+* Jayson's Github issues are [here](https://github.com/dalibug/MyVocabVault/issues?q=is%3Aissue%20assignee%3AJaysonB4)
+
+#### What was your role / which stories did you work on
+My role surrounded implementing most of the vocab list functionality and local database of expo-sqlite to work with the overall app. 
+
++ What was the biggest challenge? 
+  + My biggest challenge mainly was dealing with the many errors that came with coding and dealing with the merging of GitHub pull requests.
+  + Why was it a challenge?
+    + The challenge with the many errors was that many people online did things somewhat differently which didn't always mesh well with my code. Also, some things didn't always work as I intended them for which was frustrating. And my issue with the GitHub pull request merging was how GitHub allows you to deal with the merging when there are conflicts which is more complicated than it needs to be.
+  + How was the challenge addressed?
+    + I addressed the errors challenge by pushing through since the code is bound to work at some point, I also asked Copilot/Gemini to help me understand my code. And I overcame the GitHub issues by being able to understand how to deal with them over time as there were frequent occurrences.
++ Favorite / most interesting part of this project
+  + My favorite part was seeing the code work with the little details that I added and no given errors.
++ If you could do it over, what would you change?
+  + I would have had a concrete plan from the start on how things should look and made it so that my code worked similarly to how people online did it.
++ What is the most valuable thing you learned?
+  + The most valuable thing for me was how to deal with the merging of GitHub pull requests since everything started making sense after multiple occurrences.
+
 
 ## Conclusion
 
