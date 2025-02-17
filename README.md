@@ -55,8 +55,8 @@ My role surrounded implementing most of the vocab list functionality and local d
 ## Dalia Cabrera Hurtado
 
 ### Dalia's Contributions  
-- **[Dalia's pull requests](here)**  
-- **[Dalia’s GitHub issues](here)**  
+- **[Dalia's pull requests](https://github.com/dalibug/MyVocabVault/pulls?q=is%3Apr+is%3Aclosed+author%3Adalibug)**  
+- **[Dalia’s GitHub issues](https://github.com/dalibug/MyVocabVault/issues?q=is%3Aissue%20state%3Aclosed%20assignee%3Adalibug)**  
 
 ### What was your role / which stories did you work on?  
 Dalia worked on the landing page & implementing its functionality for this app, which included the API integration.  
