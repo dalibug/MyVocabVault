@@ -79,9 +79,9 @@ The most valuable things I learned were how to deal with GitHub issues and how t
 
 ## Conclusion
 
-- How successful was the project?
-  - 
-- What was the largest victory?
-  - Fixing all the merge conflicts is one of our biggest victories.
-- Final assessment of the project
-- -
+### How successful was the project?  
+Our project is up and running. We accomplished most of what we wanted to do, but it could still use some refinements and improvements.  
+
+### What was the largest victory?  
+Fixing all the merge conflicts was one of our biggest victories.
+
