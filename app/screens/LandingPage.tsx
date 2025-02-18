@@ -119,21 +119,21 @@ const LandingScreen = ({ route }) => {
         </TouchableOpacity>
 
         {/*  Need to create custom style for button (Currently using Save Button Style) */}
+        <TouchableOpacity style={styles.saveButton} onPress={() => navigation.navigate("PickList", { userID, vocabHistoryID, dailyWord, definition })} accessibilityLabel="Save Word to Vocab List">
+          <Text style={styles.refreshButtonText}>✅ Save to Existing Vocab List</Text>
+        </TouchableOpacity>
+
+        {/*  Need to create custom style for button (Currently using Save Button Style) */}
+        <TouchableOpacity style={styles.createListButton} onPress={() => navigation.navigate("ListCreation", { userID })} accessibilityLabel="Create New List">
+          <Text style={styles.createListText}>✨ Create New List</Text>
+        </TouchableOpacity>
+
+        {/*  Need to create custom style for button (Currently using Save Button Style) */}
         <TouchableOpacity
-          style={styles.saveButton}
+          style={styles.vocabListButton}
           onPress={() => navigation.navigate("VocabListPage", { userID, vocabHistoryID })}
         >
-          <Text style={styles.vocabListText}>🚀 View History & Vocab Lists</Text>
-        </TouchableOpacity>
-
-        {/*  Need to create custom style for button (Currently using Save Button Style) */}
-        <TouchableOpacity style={styles.saveButton} onPress={() => navigation.navigate("ListCreation", { userID })} accessibilityLabel="Create New List">
-          <Text style={styles.refreshButtonText}>Create New List</Text>
-        </TouchableOpacity>
-
-        {/*  Need to create custom style for button (Currently using Save Button Style) */}
-        <TouchableOpacity style={styles.saveButton} onPress={() => navigation.navigate("PickList", { userID, vocabHistoryID, dailyWord, definition })} accessibilityLabel="Save Word to Vocab List">
-          <Text style={styles.refreshButtonText}>Save Word to Vocab List</Text>
+          <Text style={styles.vocabListText}>🚀 View Vocab Lists</Text>
         </TouchableOpacity>
 
       </View>
@@ -169,13 +169,24 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
-  vocabListButton: {
-    position: "absolute",
-    bottom: 250,
-    backgroundColor: "#0000FF",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+  createListButton: {
+    backgroundColor: "#77afdd",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 8,
+    marginTop: 10,
+  },
+  createListText: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  vocabListButton: {
+    backgroundColor: "#FFA500",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 10,
   },
   vocabListText: {
     fontSize: 16,
